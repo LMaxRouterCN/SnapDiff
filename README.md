@@ -7,6 +7,7 @@
 
 ![alt text](<README/屏幕截图 2026-06-11 162507.png>)
 ![alt text](<README/屏幕截图 2026-06-11 162351.png>)
+![alt text](<README/屏幕截图 2026-06-11 171749.png>)
 
 </details>
 
