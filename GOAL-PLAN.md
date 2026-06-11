@@ -29,22 +29,22 @@
 4. **交互补全**：GUI 展示变动列表，提示用户输入本次更新的"核心摘要/Bug修复"。
 5. **日志导出**：合并机器数据与人工摘要，输出 Markdown 格式的 Changelog。
 ## 5. 开发阶段 (Phases)
-- [ ] **Phase 1: 基础骨架与扫描引擎**
+- [x] **Phase 1: 基础骨架与扫描引擎**
   - 搭建项目结构。
   - 实现目录递归扫描、忽略规则匹配。
   - 实现文件 Hash 计算与基础快照读写。
 ## 5. 开发阶段 (Phases)
-- [ ] **Phase 1: 基础骨架与扫描引擎 (Backend)**
+- [x] **Phase 1: 基础骨架与扫描引擎 (Backend)**
   - 搭建项目结构。
   - 实现类 `.gitignore` 的路径过滤（使用 `pathspec`）。
   - 实现文件 Hash 计算与基础快照读写。
-- [ ] **Phase 2: 差异对比算法 (Backend)**
+- [x] **Phase 2: 差异对比算法 (Backend)**
   - 实现基于 Hash 和文件名的对比逻辑（增、删、改、重命名）。
-- [ ] **Phase 3: 配置驱动的解析引擎 (Backend)**
+- [x] **Phase 3: 配置驱动的解析引擎 (Backend)**
   - 设计并实现规则配置文件（YAML/JSON）的加载器。
   - 实现文本文件副本存储与 Diff 计算。
   - 实现压缩包"深潜"提取字段的通用逻辑。
-- [ ] **Phase 4: GUI 交互与日志生成 (Frontend)**
+- [x] **Phase 4: GUI 交互与日志生成 (Frontend)**
   - 搭建 GUI 框架，对接后端 API。
   - 实现变动列表展示与人工摘要输入。
   - 实现 Markdown Changelog 的渲染与导出。

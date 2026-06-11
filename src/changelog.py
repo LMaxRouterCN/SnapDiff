@@ -1,7 +1,10 @@
-﻿from datetime import datetime
+from datetime import datetime
 from typing import Dict, List, Any
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 import os
+
+# 导入统一的路径管理
+from .paths import TEMPLATES_DIR
 
 class ChangelogGenerator:
     """
@@ -9,22 +12,17 @@ class ChangelogGenerator:
     """
     def __init__(self, rules: Dict[str, Any]):
         self.rules = rules
-        # 定位 templates 目录
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        self.template_dir = os.path.join(base_dir, 'config', 'templates')
+        # 直接使用计算好的绝对路径，无视打包环境偏移
+        self.template_dir = TEMPLATES_DIR
         
-        # 初始化 Jinja2 环境
         self.env = Environment(
             loader=FileSystemLoader(self.template_dir),
-            autoescape=select_autoescape(['html', 'xml']), # Markdown 不需要转义，但保留默认安全设置
+            autoescape=select_autoescape(['html', 'xml']),
             trim_blocks=True,
             lstrip_blocks=True
         )
 
     def _prepare_context(self, diffs: Dict[str, List], new_snapshot: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        清洗后端传来的原始 diffs 数据，转换为模板易于遍历的结构。
-        """
         context = {
             'date': datetime.now().strftime('%Y-%m-%d %H:%M'),
             'mods_updated': [],
@@ -39,7 +37,6 @@ class ChangelogGenerator:
             'moved_items': []
         }
         
-        # 处理修改
         for item in diffs.get('modified', []):
             path = item['path']
             info = new_snapshot.get(path, {})
@@ -51,7 +48,6 @@ class ChangelogGenerator:
             else:
                 context['configs_modified'].append(f"修改了 `{path}`")
                 
-        # 处理新增
         for item in diffs.get('added', []):
             path = item['path']
             if item.get('type') == 'dir':
@@ -66,7 +62,6 @@ class ChangelogGenerator:
             else:
                 context['others_added'].append(f"`{path}`")
                 
-        # 处理删除
         for item in diffs.get('deleted', []):
             path = item['path']
             if item.get('type') == 'dir':
@@ -77,7 +72,6 @@ class ChangelogGenerator:
             else:
                 context['others_removed'].append(f"`{path}`")
                 
-        # 处理重命名与移动
         for item in diffs.get('renamed', []):
             old_name = item['old_path'].split('/')[-1]
             new_name = item['new_path'].split('/')[-1]
@@ -89,9 +83,6 @@ class ChangelogGenerator:
         return context
 
     def generate(self, diffs: Dict[str, List], new_snapshot: Dict[str, Any], summary: str) -> str:
-        """
-        渲染并返回 Markdown 字符串。
-        """
         template_name = self.rules.get('template_file', 'default.md')
         try:
             template = self.env.get_template(template_name)

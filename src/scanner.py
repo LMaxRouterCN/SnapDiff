@@ -3,13 +3,10 @@ import pathspec
 import yaml
 from pathlib import Path
 from typing import Dict, Any
-import sys
-import os
 
-# 确保能导入同目录下的模块
-sys.path.append(os.path.dirname(__file__))
-import storage
-import deep_dive
+# 使用相对导入，完美兼容 PyInstaller 内部打包机制
+from . import storage
+from . import deep_dive
 
 class Scanner:
     """
@@ -45,7 +42,6 @@ class Scanner:
         for path in self.root_dir.rglob('*'):
             rel_path = path.relative_to(self.root_dir).as_posix()
             
-            # 应用忽略规则 (同时匹配文件和目录)
             if self.ignore_spec.match_file(rel_path):
                 continue
             
@@ -72,10 +68,9 @@ class Scanner:
                     results[rel_path] = info
                     
                 elif path.is_dir():
-                    # 记录目录，用于检测空文件夹的增删
                     results[rel_path] = {
                         'type': 'dir',
-                        'hash': '', # 目录无 Hash
+                        'hash': '',
                         'size': 0,
                         'mtime': path.stat().st_mtime
                     }

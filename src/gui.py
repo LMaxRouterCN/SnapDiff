@@ -1,4 +1,4 @@
-﻿import sys
+import sys
 import os
 import yaml
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
@@ -11,6 +11,7 @@ from src.scanner import Scanner
 from src.storage import Storage
 from src.differ import Differ
 from src.changelog import ChangelogGenerator
+from src.paths import DEFAULT_RULES_PATH
 
 class ScanWorker(QThread):
     finished = Signal(dict, dict, dict)
@@ -92,7 +93,6 @@ class MainWindow(QMainWindow):
         # -- 左侧下半部分 (摘要与生成) --
         bottom_widget = QWidget()
         bottom_layout = QVBoxLayout(bottom_widget)
-        # 极限压缩留白：间距设为 2，上边距设为 5
         bottom_layout.setSpacing(2)
         bottom_layout.setContentsMargins(0, 5, 0, 0)
         
@@ -107,7 +107,7 @@ class MainWindow(QMainWindow):
         
         left_splitter.addWidget(top_widget)
         left_splitter.addWidget(bottom_widget)
-        left_splitter.setSizes([600, 200]) # 初始比例
+        left_splitter.setSizes([600, 200])
         
         # ================= 右侧面板 =================
         right_widget = QWidget()
@@ -205,10 +205,11 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "错误", "请选择有效的目录")
             return
             
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        rules_path = os.path.join(base_dir, 'config', 'default_rules.yaml')
+        # 使用统一管理的配置路径，无视打包环境偏移
+        rules_path = DEFAULT_RULES_PATH
         if not os.path.exists(rules_path):
-             rules_path = "config/default_rules.yaml"
+             QMessageBox.critical(self, "致命错误", f"找不到配置文件:\n{rules_path}")
+             return
              
         self.scan_btn.setEnabled(False)
         self.scan_btn.setText("扫描中...")
@@ -245,7 +246,6 @@ class MainWindow(QMainWindow):
             self.tree.addTopLevelItem(cat_item)
             for item in items:
                 path = item.get('path', item.get('new_path', ''))
-                # 标记目录
                 if item.get('type') == 'dir':
                     path = f"[目录] {path}"
                 child = QTreeWidgetItem(["", path, ""])
@@ -264,11 +264,14 @@ class MainWindow(QMainWindow):
             return
             
         summary = self.summary_input.toPlainText()
-# 加载规则配置以获取模板名称
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        rules_path = os.path.join(base_dir, 'config', 'default_rules.yaml')
-        with open(rules_path, 'r', encoding='utf-8') as f:
-            rules = yaml.safe_load(f)
+        
+        # 加载规则配置以获取模板名称
+        try:
+            with open(DEFAULT_RULES_PATH, 'r', encoding='utf-8') as f:
+                rules = yaml.safe_load(f)
+        except Exception as e:
+            QMessageBox.critical(self, "错误", f"读取配置文件失败:\n{e}")
+            return
             
         generator = ChangelogGenerator(rules)
         md_content = generator.generate(self.diffs, self.new_snapshot, summary)
