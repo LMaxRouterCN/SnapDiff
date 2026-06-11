@@ -1,0 +1,42 @@
+# SnapDiff 默认规则配置
+
+# 1. 忽略规则 (类似 .gitignore)
+# 支持通配符、目录匹配等 (基于 gitwildmatch 语法)
+ignore_patterns:
+  - ".git/"
+  - ".snapdiff/"       # 存放快照和历史的默认目录
+  - "*.log"
+  - "crash-reports/"
+  - "logs/"
+  - "saves/"
+  - "*.tmp"
+
+# 2. 副本存储规则
+# 对于以下后缀的文本文件，在快照中额外保存其文本内容，以便后续生成 Diff
+copy_content_extensions:
+  - ".json"
+  - ".toml"
+  - ".yaml"
+  - ".yml"
+  - ".cfg"
+  - ".conf"
+  - ".txt"
+  - ".md"
+  - ".zs"            # CraftTweaker 脚本
+  - ".js"            # KubeJS 脚本
+
+# 3. 深潜规则 (Deep Dive)
+# 针对压缩包/二进制文件，进入其内部提取特定字段(如版本号)
+# 目前仅支持 Zip 格式 (如 .jar, .zip)
+deep_dive_rules:
+  - extension: ".jar"
+    targets:
+      - internal_path: "META-INF/mods.toml"
+        format: "toml"
+        extract_fields: ["version", "displayName"]
+      - internal_path: "fabric.mod.json"
+        format: "json"
+        extract_fields: ["version", "name"]
+      - internal_path: "mcmod.info"
+        format: "json"
+        extract_fields: ["version", "name"]

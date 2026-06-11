@@ -1,0 +1,6 @@
+pathspec
+pyyaml
+rich
+PySide6
+tomli
+Jinja2
